@@ -1,5 +1,6 @@
 from pydantic import BaseSettings
 from enum import Enum
+from functools import lru_cache
 
 class Profile(str, Enum):
     STAGING = "staging"
@@ -12,7 +13,7 @@ class ProfileSetting(BaseSettings):
 
     class Config:
         # env_file = "../.env"
-        env_file = "app/environments/.env"
+        env_file = "api/environments/.env"
         env_file_encoding = "utf-8"
 
 
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
         case_sensitive = True
         env_file_encoding = "utf-8"
 
-
+@lru_cache()
 def get_settings():
     profile = ProfileSetting()
     return profile.get_settings()

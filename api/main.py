@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from api.controllers.controllers import router
-from db import disconnect_db
+from api.web.controllers.controllers import router
+from api.web.db import disconnect_db
 
 app = FastAPI(title = "Sales Pilot API", version = "1.0.0")
 

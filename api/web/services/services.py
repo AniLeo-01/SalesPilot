@@ -2,7 +2,7 @@ from ..dataloaders.DeepLakeLoader import DeepLakeLoader
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import OpenAI
 from langchain.schema import SystemMessage, HumanMessage
-from prompts import DETECT_OBJECTION_PROMPT, OBJECTION_GUIDELINES_PROMPT
+from api.web.prompts import DETECT_OBJECTION_PROMPT, OBJECTION_GUIDELINES_PROMPT
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dto import request_model
 from fastapi import HTTPException
