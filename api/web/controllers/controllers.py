@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..db import get_session
-from ..dto.request_model import CreateQuery
+from ..dto.request_model import CreateQuery, CreateUserData
 from ..services import services
 
 router = APIRouter()
 
 @router.post('/query')
-async def get_response_from_query(input_data: CreateQuery, session: AsyncSession = Depends(get_session)):
-    response = await services.get_response(input_data = input_data, session = session)
+async def get_response_from_query(user_data: CreateUserData, input_data: CreateQuery, session: AsyncSession = Depends(get_session)):
+    response = await services.get_response(user_data=user_data ,query_data=input_data, session = session)
     if response:
         return response
     else:

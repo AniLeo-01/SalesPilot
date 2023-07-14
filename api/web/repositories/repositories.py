@@ -5,6 +5,18 @@ from pydantic import BaseModel
 from sqlalchemy.future import select
 from typing import Optional
 
+async def get_data_by_column(
+    session: AsyncSession,
+    column: BaseModel,
+    value: str
+):
+    query_statement = select(db_model.Query).where(
+        column == value
+    )
+    execute_query = await session.execute(query_statement)
+    response = execute_query.scalars().first()
+    return response
+
 async def get_all_queries(
         session: AsyncSession
 ):
@@ -23,19 +35,10 @@ async def create_query(
     await session.refresh(new_query)
     return new_query
 
-async def get_query_by_id(
-        id: int,
-        session: AsyncSession
-):
-    query = select(db_model.Query).where(id = id)
-    execute_query = await session.execute(query)
-    response = execute_query.scalars().first()
-    return response
-
 async def delete_query(
         session: AsyncSession, query_obj: db_model.Query
 ):
-    session.delete(query_obj)
+    await session.delete(query_obj)
     await session.commit()
     return query_obj
 

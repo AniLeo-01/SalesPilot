@@ -3,9 +3,8 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import DeepLake
 
 class DeepLakeLoader:
-    def __init__(self, source_data_path, org_id, token_id):
+    def __init__(self, source_data_path, token_id):
         self.source_data_path = source_data_path
-        self.deeplake_org_id = org_id
         self.activeloop_token_id = token_id
         self.file_name = os.path.basename(source_data_path).split('.')[0]
         self.data = self.split_data()
@@ -14,7 +13,7 @@ class DeepLakeLoader:
         else:
             self.db = self.create_db()
 
-    async def split_data(self):
+    def split_data(self):
         with open(f'{self.source_data_path}', 'r') as f:
             text = f.read()
         # Split the text into a list using the keyword "Objection: "
@@ -24,22 +23,22 @@ class DeepLakeLoader:
         objections_list = ["Objection: " + objection for objection in objections_list]
         return objections_list 
     
-    async def load_db(self):
-        return DeepLake(dataset_path=f'{self.deeplake_org_id}/{self.file_name}', embedding_function=OpenAIEmbeddings(), read_only=True, token = self.activeloop_token_id)
+    def load_db(self):
+        return DeepLake(dataset_path=f'dataset/{self.file_name}', embedding_function=OpenAIEmbeddings(), read_only=True, token = self.activeloop_token_id)
     
-    async def create_db(self):
-        return DeepLake.from_texts(self.data, OpenAIEmbeddings(), dataset_path=f'{self.deeplake_org_id}/{self.file_name}', token = self.activeloop_token_id)
+    def create_db(self):
+        return DeepLake.from_texts(self.data, OpenAIEmbeddings(), dataset_path=f'dataset/{self.file_name}', token = self.activeloop_token_id)
     
-    async def check_if_db_exists(self):
+    def check_if_db_exists(self):
         """
         Check if the database already exists.
 
         Returns:
             bool: True if the database exists, False otherwise.
         """
-        return os.path.exists(f'{self.deeplake_org_id}/{self.file_name}')
+        return os.path.exists(f'dataset/{self.file_name}')
 
-    async def query_db(self, query):
+    def query_db(self, query):
         results = self.db.similarity_search(query, k=3)
         content = []
         for result in results:

@@ -23,4 +23,4 @@ async def get_session() -> AsyncSession:
         yield session
 
 async def disconnect_db():
-    engine.dispose()
+    await engine.dispose()

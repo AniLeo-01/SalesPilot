@@ -7,51 +7,33 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..dto import request_model
 from fastapi import HTTPException
 from ..repositories import repositories
-
-db = DeepLakeLoader('data/SalesPilot.txt')
-user_query = input("Enter the sales transcript...")
-
-chat = ChatOpenAI()
-system_message = SystemMessage(content = DETECT_OBJECTION_PROMPT)
-human_message = HumanMessage(content = f"Customer: {user_query}")
-response = chat([system_message, human_message])
-detected_objection = response.content
-
-results = db.query_db(detected_objection)
-
-system_message = SystemMessage(content=OBJECTION_GUIDELINES_PROMPT)
-human_message = HumanMessage(content=f'Customer objection: {detected_objection} | Relevant guidelines: {results}')
-
-response = chat([system_message, human_message])
-print(response.content)
-
+from ..dao import db_model
 
 async def initialize_deeplake(query: request_model.CreateUserData):
-    db = await DeepLakeLoader('data/SalesPilot.txt', org_id=query.activeloop_org_id, token_id=query.activeloop_token_id)
+    db = DeepLakeLoader('data/SalesPilot.txt', token_id=query.activeloop_token_id)
     return db
 
 async def get_response(user_data: request_model.CreateUserData, query_data: request_model.CreateQuery, session: AsyncSession):
     deeplake_obj = await initialize_deeplake(user_data)
     user_query = query_data.query
     chat = ChatOpenAI(openai_api_key=user_data.chatgpt_api_key)
-    system_message = await SystemMessage(content = DETECT_OBJECTION_PROMPT)
-    human_message = await HumanMessage(content = f"Customer: {user_query}")
-    response = await chat([system_message, human_message])
+    system_message = SystemMessage(content = DETECT_OBJECTION_PROMPT)
+    human_message = HumanMessage(content = f"{user_query}")
+    response = chat([system_message, human_message])
     detected_objection = response.content
+    results = deeplake_obj.query_db(detected_objection)
 
-    results = await deeplake_obj.query_db(detected_objection)
+    system_message = SystemMessage(content=OBJECTION_GUIDELINES_PROMPT)
+    human_message = HumanMessage(content=f'Customer objection: {detected_objection} | Relevant guidelines: {results}')
 
-    system_message = await SystemMessage(content=OBJECTION_GUIDELINES_PROMPT)
-    human_message = await HumanMessage(content=f'Customer objection: {detected_objection} | Relevant guidelines: {results}')
-
-    response = await chat([system_message, human_message])
+    response = chat([system_message, human_message])
     #create query and response entry in Query table
-    query_data = query_data(
-        query = user_query,
-        objection = detected_objection,
-        response = response.content
+    query_entry = request_model.CreateQuery(
+        query=user_query,
+        sales_objection=detected_objection,
+        response=response.content
     )
-    created_query = await repositories.create_query(user_query = query_data, session = session)
+    created_query = await repositories.create_query(user_query = query_entry, session = session)
 
     return created_query
 
@@ -66,7 +48,10 @@ async def get_all_queries(session: AsyncSession):
         )
     
 async def delete_query_by_id(id: int, session: AsyncSession):
-    query_data = await repositories.get_query_by_id(id = id, session= session)
+    query_data = await repositories.get_data_by_column(
+        column = db_model.Query.id,
+        value= id, 
+        session= session)
     if query_data:
         #delete from Urls table
         deleted_query = await repositories.delete_query(
