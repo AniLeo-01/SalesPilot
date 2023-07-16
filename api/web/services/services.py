@@ -21,7 +21,7 @@ async def get_response(user_data: request_model.CreateUserData, query_data: requ
     human_message = HumanMessage(content = f"{user_query}")
     response = chat([system_message, human_message])
     if response.content == "None":
-        detected_objection = None
+        detected_objection = "No sales objection found in query"
     else:
         detected_objection = response.content
     results = deeplake_obj.query_db(detected_objection)

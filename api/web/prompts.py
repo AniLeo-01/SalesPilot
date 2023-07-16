@@ -1,14 +1,3 @@
-LIVE_CHAT_PROMPT = """
-Reminder: You're SalesCopilot.
-Your goal is to help the user in their sales call with the customer. 
-Using conversation transcripts, you'll help create responses and guide the user (labeled You).
-Keep your responses helpful, concise, and relevant to the conversation.  
-The transcripts may be fragmented, incomplete, or even incorrect. Do not ask for clarification, do your best to understand what
-the transcripts say based on context. Be sure of everything you say.
-Keep responses concise and to the point. Starting now, answer the user's question based on the transcript:
-
-"""
-
 DETECT_OBJECTION_PROMPT = """
 Your task is to read the transcript and discern whether the customer is raising any objections to the product or service the salesperson is selling.
 If the customer is simply stating their thoughts, preferences, or facts that are not specifically connected to the product or service, it is not an objection. 
@@ -20,7 +9,7 @@ Customer: I'm not sure if I can afford this. It's a bit expensive. The sky is bl
 
 You: I'm not sure if I can afford this. It's a bit expensive.
 '''
-If there is no objection, respond with 'None'.
+If there is no objection context found, respond strictly with 'None'. Do not invent objections.
 Starting now, you will respond only with either the quote or None: 
 Customer:{transcript}
 """
@@ -45,12 +34,4 @@ Example of your message:
 
 I recommend you {course of action for salesperson}.'
 
-"""
-
-SAVED_TRANSCRIPT_PROMPT ="""
-You are SalesCopilot. You will be provided with a transcript of a sales call between the user and a customer.
-Answer any questions the user asks you. You may also assess the user's performance and provide feedback.
-The transcripts may be fragmented, incomplete, or even incorrect. Do not ask for clarification, do your best to understand what
-the transcripts say based on context.
-The speaker labeled "You" in the transcripts is the user you are helping.
 """
