@@ -1,7 +1,7 @@
 from ..dataloaders.DeepLakeLoader import DeepLakeLoader
 from langchain.chat_models import ChatOpenAI
 from langchain.llms import OpenAI
-from langchain.schema import SystemMessage, HumanMessage
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from api.web.prompts import DETECT_OBJECTION_PROMPT, OBJECTION_GUIDELINES_PROMPT
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dto import request_model
@@ -20,13 +20,19 @@ async def get_response(user_data: request_model.CreateUserData, query_data: requ
     system_message = SystemMessage(content = DETECT_OBJECTION_PROMPT)
     human_message = HumanMessage(content = f"{user_query}")
     response = chat([system_message, human_message])
-    detected_objection = response.content
+    if response.content == "None":
+        detected_objection = None
+    else:
+        detected_objection = response.content
     results = deeplake_obj.query_db(detected_objection)
+    if results:
+        system_message = SystemMessage(content=OBJECTION_GUIDELINES_PROMPT)
+        human_message = HumanMessage(content=f'Customer objection: {detected_objection} | Relevant guidelines: {results}')
 
-    system_message = SystemMessage(content=OBJECTION_GUIDELINES_PROMPT)
-    human_message = HumanMessage(content=f'Customer objection: {detected_objection} | Relevant guidelines: {results}')
-
-    response = chat([system_message, human_message])
+        response = chat([system_message, human_message])
+        print("type", type(response), "response:", response)
+    else:
+        response = AIMessage(content="No recommendation provided for the sales objection")
     #create query and response entry in Query table
     query_entry = request_model.CreateQuery(
         query=user_query,

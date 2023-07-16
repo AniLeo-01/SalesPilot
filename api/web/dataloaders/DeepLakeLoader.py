@@ -39,9 +39,12 @@ class DeepLakeLoader:
         return os.path.exists(f'dataset/{self.file_name}')
 
     def query_db(self, query):
-        results = self.db.similarity_search(query, k=3)
-        content = []
-        for result in results:
-            content.append(result.page_content)
-        return content
+        if query:
+            results = self.db.similarity_search(query, k=3)
+            content = []
+            for result in results:
+                content.append(result.page_content)
+            return content
+        else:
+            return None
     
