@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 class CreateUserData(BaseModel):
-    activeloop_token_id: str = Field(..., example="0x06012c8cf97bead5deae237070f9587f8e7a266d")
     chatgpt_api_key: str = Field(..., example = "0x8io143213nkjnjf3n2kjnd3j2kndjndnj3donojn")
 
     class Config:
