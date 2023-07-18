@@ -8,9 +8,10 @@ from ..dto import request_model
 from fastapi import HTTPException
 from ..repositories import repositories
 from ..dao import db_model
+from openai.error import AuthenticationError
 
 async def initialize_deeplake(query: request_model.CreateUserData):
-    db = DeepLakeLoader('data/SalesPilot.txt', token_id=query.activeloop_token_id)
+    db = DeepLakeLoader('data/SalesPilot.txt')
     return db
 
 async def get_response(user_data: request_model.CreateUserData, query_data: request_model.CreateQuery, session: AsyncSession):
@@ -19,7 +20,13 @@ async def get_response(user_data: request_model.CreateUserData, query_data: requ
     chat = ChatOpenAI(openai_api_key=user_data.chatgpt_api_key)
     system_message = SystemMessage(content = DETECT_OBJECTION_PROMPT)
     human_message = HumanMessage(content = f"{user_query}")
-    response = chat([system_message, human_message])
+    try:
+        response = chat([system_message, human_message])
+    except AuthenticationError as e:
+        raise HTTPException(
+            status_code=403,
+            detail = str(e)
+        )
     if response.content == "None":
         detected_objection = "No sales objection found in query"
     else:

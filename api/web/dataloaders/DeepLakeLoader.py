@@ -3,9 +3,8 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import DeepLake
 
 class DeepLakeLoader:
-    def __init__(self, source_data_path, token_id):
+    def __init__(self, source_data_path):
         self.source_data_path = source_data_path
-        self.activeloop_token_id = token_id
         self.file_name = os.path.basename(source_data_path).split('.')[0]
         self.data = self.split_data()
         if self.check_if_db_exists():
@@ -24,10 +23,10 @@ class DeepLakeLoader:
         return objections_list 
     
     def load_db(self):
-        return DeepLake(dataset_path=f'dataset/{self.file_name}', embedding_function=OpenAIEmbeddings(), read_only=True, token = self.activeloop_token_id)
+        return DeepLake(dataset_path=f'dataset/{self.file_name}', embedding_function=OpenAIEmbeddings(), read_only=True)
     
     def create_db(self):
-        return DeepLake.from_texts(self.data, OpenAIEmbeddings(), dataset_path=f'dataset/{self.file_name}', token = self.activeloop_token_id)
+        return DeepLake.from_texts(self.data, OpenAIEmbeddings(), dataset_path=f'dataset/{self.file_name}')
     
     def check_if_db_exists(self):
         """
